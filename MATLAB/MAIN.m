@@ -39,7 +39,7 @@ function varargout = MAIN(varargin)
 
 % Edit the above text to modify the response to help MAIN
 
-% Last Modified by GUIDE v2.5 24-Nov-2018 21:51:22
+% Last Modified by GUIDE v2.5 24-Nov-2018 23:07:02
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -93,7 +93,7 @@ guidata(hObject, handles);
 %Set the default values on the GUI. It is recommended to choose a valid set 
 %of default values as a starting point when the program launches.
 clc
-Default_axial_force=50;
+Default_axial_force=1;
 set(handles.Wishbone_thickness,'Value',Default_axial_force);
 set(handles.wishbone_thickness_txt,'String',num2str(Default_axial_force));
 
@@ -116,11 +116,11 @@ if(isempty(handles))
     Wrong_File();
 else
     %Get the design parameters from the interface (DO NOT PERFORM ANY DESIGN CALCULATIONS HERE)
-    wishbone_thickness = get(handles.Wishbone_thickness,'Value');
+     wishbone_thickness = get(handles.Wishbone_thickness,'Value');
 
-    disp(wishbone_thickness);
+     disp(wishbone_thickness);
     %The design calculations are done within this function. This function is in the file Design_code.m
-    Design_code(wishbone_thickness);
+     Design_code(wishbone_thickness);
 
     %Show the results on the GUI.
     log_file = 'Z:\groupABC_complete\Log\groupABC_LOG.TXT';
