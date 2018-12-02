@@ -1,1 +1,1 @@
-"thikness"=2.8
+"thikness"=12.4

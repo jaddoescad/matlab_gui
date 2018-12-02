@@ -1,25 +1,26 @@
 ***Shaft Design***
-minimum chassis safety factor = 1.6729. 
-Impact Force = 18.0488 (kN). 
-thickness = 2.8 (mm). 
-mass of driver = 0 (kg). 
-mass of tubing = 50.8138 (kg). 
-sprung mass = 300.8138 (kg). 
-total mass of car = 300.8138 (kg). 
+the chassis fails because lowest safety factor is below 1.5 
+minimum chassis safety factor = 0.9584. 
+Impact Force = 178.2281 (kN). 
+thickness = 12.4 (mm). 
+mass of driver = 500 (kg). 
+mass of tubing = 141.1405 (kg). 
+sprung mass = 891.1405 (kg). 
+total mass of car = 891.1405 (kg). 
 ***Wishbone Analysis***
-for a safety factor of 1.6, thickness of wishbone must be = 0.28863. 
+for a safety factor of 1.6, thickness of wishbone must be = 0.87218. 
 ***Pushrod Analysis***
-for a safety factor of 1.6, thickness of pushrod must be = 0.21319. 
+for a safety factor of 1.6, thickness of pushrod must be = 0.66059. 
 ***spring Analysis***
-wire_diameter of spring is = 0.0091582. 
-average length of spring is = 0.13471. 
-total number of coils of spring is = 12.8296. 
+wire_diameter of spring is = 0.013153. 
+average length of spring is = 0.24011. 
+total number of coils of spring is = 17.5536. 
 ***Damper Analysis***
-the ride rate is = 32171.8093. 
-the sprung frequency is = 3.3905. 
-the unsprung frequency is = 15.1095. 
-the minimum diameter is = 0.0054358. 
-the minimum number of orifices for high speed compression is = 4. 
-the minimum number of orifices for high speed rebound is = 4. 
+the ride rate is = 60552.4494. 
+the sprung frequency is = 2.6496. 
+the unsprung frequency is = 18.956. 
+the minimum diameter is = 0.0071315. 
+the minimum number of orifices for high speed compression is = 2. 
+the minimum number of orifices for high speed rebound is = 2. 
 ***steering shaft analysis***
-the torsional stress of the steering shaft is = 13.1352. 
+the torsional stress of the steering shaft is = 13.1352+1.399e-15i. 
