@@ -1,1 +1,25 @@
-***yo***
+***Shaft Design***
+minimum chassis safety factor = 1.6729. 
+Impact Force = 18.0488 (kN). 
+thickness = 2.8 (mm). 
+mass of driver = 0 (kg). 
+mass of tubing = 50.8138 (kg). 
+sprung mass = 300.8138 (kg). 
+total mass of car = 300.8138 (kg). 
+***Wishbone Analysis***
+for a safety factor of 1.6, thickness of wishbone must be = 0.28863. 
+***Pushrod Analysis***
+for a safety factor of 1.6, thickness of pushrod must be = 0.21319. 
+***spring Analysis***
+wire_diameter of spring is = 0.0091582. 
+average length of spring is = 0.13471. 
+total number of coils of spring is = 12.8296. 
+***Damper Analysis***
+the ride rate is = 32171.8093. 
+the sprung frequency is = 3.3905. 
+the unsprung frequency is = 15.1095. 
+the minimum diameter is = 0.0054358. 
+the minimum number of orifices for high speed compression is = 4. 
+the minimum number of orifices for high speed rebound is = 4. 
+***steering shaft analysis***
+the torsional stress of the steering shaft is = 13.1352. 

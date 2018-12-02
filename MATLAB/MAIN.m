@@ -39,7 +39,7 @@ function varargout = MAIN(varargin)
 
 % Edit the above text to modify the response to help MAIN
 
-% Last Modified by GUIDE v2.5 24-Nov-2018 23:07:02
+% Last Modified by GUIDE v2.5 26-Nov-2018 23:51:35
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -93,9 +93,12 @@ guidata(hObject, handles);
 %Set the default values on the GUI. It is recommended to choose a valid set 
 %of default values as a starting point when the program launches.
 clc
-Default_axial_force=1;
-set(handles.Wishbone_thickness,'Value',Default_axial_force);
-set(handles.wishbone_thickness_txt,'String',num2str(Default_axial_force));
+default_friction_value= 0.7;
+set(handles.Friction,'Value',default_friction_value);
+set(handles.Friction_txt,'String',num2str(default_friction_value));
+
+
+
 
 %Set the window title with the group identification:
 set(handles.figure1,'Name','Group ABC // CADCAM 2017');
@@ -116,18 +119,32 @@ if(isempty(handles))
     Wrong_File();
 else
     %Get the design parameters from the interface (DO NOT PERFORM ANY DESIGN CALCULATIONS HERE)
-     wishbone_thickness = get(handles.Wishbone_thickness,'Value');
-
-     disp(wishbone_thickness);
+    friction = get(handles.Friction,'Value');
+    
+    velocity = get(handles.velocity,'Value');
+    mass_of_driver = get(handles.mass_of_driver,'Value');
+    turning_radius = get(handles.Turning_Radius,'Value');
     %The design calculations are done within this function. This function is in the file Design_code.m
-     Design_code(wishbone_thickness);
-
+    total_mass_of_car = chassis_analysis(velocity, mass_of_driver);
+    wishbone_analysis(total_mass_of_car, friction);
+    pushrod_analysis(total_mass_of_car, friction);
+    stiffness_K = spring_analysis(total_mass_of_car, friction);
+    damper_analysis(total_mass_of_car, friction, stiffness_K);
+    steering_shaft(total_mass_of_car, friction);
+    u_joint(friction, total_mass_of_car);
+    pinion_analysis(total_mass_of_car, friction);
+%     gear_bearing_analysis(friction,total_mass_of_car)
+    rack_analysis(friction, total_mass_of_car);
+    tierod_analysis(friction, total_mass_of_car);
+   
+    amount_of_steering_wheel_turn(turning_radius);
+  
+    
     %Show the results on the GUI.
     log_file = 'Z:\groupABC_complete\Log\groupABC_LOG.TXT';
     fid = fopen(log_file,'r'); %Open the log file for reading
     S=char(fread(fid)'); %Read the file into a string
     fclose(fid);
-
     set(handles.TXT_log,'String',S); %write the string into the textbox
     set(handles.TXT_path,'String',log_file); %show the path of the log file
     set(handles.TXT_path,'Visible','on');
@@ -155,30 +172,23 @@ disp('To run the MAIN.m file, open it in the editor and press ');
 disp('the green "PLAY" button, or press "F5" on the keyboard.');
 close gcf
 
-function wishbone_thickness_txt_Callback(hObject, eventdata, handles) %#ok
-% hObject    handle to wishbone_thickness_txt (see GCBO) 
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+% if(isempty(handles))
+%     Wrong_File();
+% else
+%     value = round(str2double(get(hObject,'String')));
+% 
+%     %Apply basic testing to see if the value does not exceed the range of the
+%     %slider (defined in the gui)
+%     if(value<get(handles.Friction,'Min'))
+%         value = get(handles.Friction,'Min');
+%     end
+%     if(value>get(handles.Friction,'Max'))
+%         value = get(handles.Friction,'Max');
+%     end
+%     set(hObject,'String',value);
+%     set(handles.Friction,'Value',value);
+% end
 
-% Hints: get(hObject,'String') returns contents of wishbone_thickness_txt as text
-%        str2double(get(hObject,'String')) returns contents of wishbone_thickness_txt as a double
-
-if(isempty(handles))
-    Wrong_File();
-else
-    value = round(str2double(get(hObject,'String')));
-
-    %Apply basic testing to see if the value does not exceed the range of the
-    %slider (defined in the gui)
-    if(value<get(handles.Wishbone_thickness,'Min'))
-        value = get(handles.Wishbone_thickness,'Min');
-    end
-    if(value>get(handles.Wishbone_thickness,'Max'))
-        value = get(handles.Wishbone_thickness,'Max');
-    end
-    set(hObject,'String',value);
-    set(handles.Wishbone_thickness,'Value',value);
-end
 
 % =========================================================================
 % =========================================================================
@@ -209,8 +219,8 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 % --- Executes on slider movement.
-function Wishbone_thickness_Callback(hObject, eventdata, handles) %#ok
-% hObject    handle to Wishbone_thickness (see GCBO)
+function Friction_Callback(hObject, eventdata, handles) %#ok
+% hObject    handle to Friction (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
@@ -220,13 +230,13 @@ function Wishbone_thickness_Callback(hObject, eventdata, handles) %#ok
 if(isempty(handles))
     Wrong_File();
 else
-    value = round(get(hObject,'Value')); %Round the value to the nearest integer
-    set(handles.wishbone_thickness_txt,'String',num2str(value));
+    value = get(hObject,'Value'); %Round the value to the nearest integer
+    set(handles.Friction_txt,'String',num2str(value));
 end
 
 % --- Executes during object creation, after setting all properties.
-function Wishbone_thickness_CreateFcn(hObject, eventdata, handles) %#ok
-% hObject    handle to Wishbone_thickness (see GCBO)
+function Friction_CreateFcn(hObject, eventdata, handles) %#ok
+% hObject    handle to Friction (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -236,8 +246,8 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
 end
 
 % --- Executes during object creation, after setting all properties.
-function wishbone_thickness_txt_CreateFcn(hObject, eventdata, handles) %#ok
-% hObject    handle to wishbone_thickness_txt (see GCBO)
+function Friction_txt_CreateFcn(hObject, eventdata, handles) %#ok
+% hObject    handle to Friction_txt (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -245,4 +255,256 @@ function wishbone_thickness_txt_CreateFcn(hObject, eventdata, handles) %#ok
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
+end
+
+
+
+% % --- Executes on slider movement.
+% function Wishbone_thickness_Callback(hObject, eventdata, handles) %#ok
+% % hObject    handle to Friction (see GCBO)
+% % eventdata  reserved - to be defined in a future version of MATLAB
+% % handles    structure with handles and user data (see GUIDATA)
+% 
+% % Hints: get(hObject,'Value') returns position of slider
+% %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+% 
+% if(isempty(handles))
+%     Wrong_File();
+% else
+%     value = round(get(hObject,'Value')); %Round the value to the nearest integer
+%     set(handles.Friction_txt,'String',num2str(value));
+% end
+
+
+% --- Executes on slider movement.
+function Turning_Radius_Callback(hObject, eventdata, handles)
+% hObject    handle to Turning_Radius (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+if(isempty(handles))
+    Wrong_File();
+else
+    value = round(get(hObject,'Value')); %Round the value to the nearest integer
+    set(handles.Turning_radius_txt,'String',num2str(value));
+end
+
+
+% --- Executes during object creation, after setting all properties.
+function Turning_Radius_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Turning_Radius (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+
+function Turning_radius_txt_Callback(hObject, eventdata, handles)
+% hObject    handle to Turning_radius_txt (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of Turning_radius_txt as text
+%        str2double(get(hObject,'String')) returns contents of Turning_radius_txt as a double
+if(isempty(handles))
+    Wrong_File();
+else
+    value = round(str2double(get(hObject,'String')));
+
+    %Apply basic testing to see if the value does not exceed the range of the
+    %slider (defined in the gui)
+    if(value<get(handles.Turning_Radius,'Min'))
+        value = get(handles.Turning_Radius,'Min');
+    end
+    if(value>get(handles.Turning_Radius,'Max'))
+        value = get(handles.Turning_Radius,'Max');
+    end
+    set(hObject,'String',value);
+    set(handles.Turning_Radius,'Value',value);
+end
+
+
+% --- Executes during object creation, after setting all properties.
+function Turning_radius_txt_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Turning_radius_txt (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function Velocity_txt_Callback(hObject, eventdata, handles)
+% hObject    handle to Velocity_txt (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of Velocity_txt as text
+%        str2double(get(hObject,'String')) returns contents of Velocity_txt as a double
+if(isempty(handles))
+    Wrong_File();
+else
+    value = round(str2double(get(hObject,'String')));
+
+    %Apply basic testing to see if the value does not exceed the range of the
+    %slider (defined in the gui)
+    if(value<get(handles.velocity,'Min'))
+        value = get(handles.velocity,'Min');
+    end
+    if(value>get(handles.velocity,'Max'))
+        value = get(handles.velocity,'Max');
+    end
+    set(hObject,'String',value);
+    set(handles.velocity,'Value',value);
+end
+
+% --- Executes during object creation, after setting all properties.
+function Velocity_txt_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Velocity_txt (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function mass_of_driver_txt_Callback(hObject, eventdata, handles)
+% hObject    handle to mass_of_driver_txt (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of mass_of_driver_txt as text
+%        str2double(get(hObject,'String')) returns contents of mass_of_driver_txt as a double
+if(isempty(handles))
+    Wrong_File();
+else
+    value = round(str2double(get(hObject,'String')));
+
+    %Apply basic testing to see if the value does not exceed the range of the
+    %slider (defined in the gui)
+    if(value<get(handles.mass_of_driver,'Min'))
+        value = get(handles.mass_of_driver,'Min');
+    end
+    if(value>get(handles.mass_of_driver,'Max'))
+        value = get(handles.mass_of_driver,'Max');
+    end
+    set(hObject,'String',value);
+    set(handles.mass_of_driver,'Value',value);
+end
+
+% --- Executes during object creation, after setting all properties.
+function mass_of_driver_txt_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to mass_of_driver_txt (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on slider movement.
+function mass_of_driver_Callback(hObject, eventdata, handles)
+% hObject    handle to mass_of_driver (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+if(isempty(handles))
+    Wrong_File();
+else
+    value = round(get(hObject,'Value')); %Round the value to the nearest integer
+    set(handles.mass_of_driver_txt,'String',num2str(value));
+end
+
+
+% --- Executes during object creation, after setting all properties.
+function mass_of_driver_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to mass_of_driver (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+% --- Executes on slider movement.
+function velocity_Callback(hObject, eventdata, handles)
+% hObject    handle to velocity (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+if(isempty(handles))
+    Wrong_File();
+else
+    value = round(get(hObject,'Value')); %Round the value to the nearest integer
+    set(handles.Velocity_txt,'String',num2str(value));
+end
+
+
+
+% --- Executes during object creation, after setting all properties.
+function velocity_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to velocity (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+% --- Executes on mouse press over axes background.
+function axes1_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to axes1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+
+function Friction_txt_Callback(hObject, eventdata, handles)
+% hObject    handle to Friction_txt (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of Friction_txt as text
+%        str2double(get(hObject,'String')) returns contents of Friction_txt as a double
+if(isempty(handles))
+    Wrong_File();
+else
+    value = str2double(get(hObject,'String'));
+
+    %Apply basic testing to see if the value does not exceed the range of the
+    %slider (defined in the gui)
+    if(value<get(handles.Friction,'Min'))
+        value = get(handles.Friction,'Min');
+    end
+    if(value>get(handles.Friction,'Max'))
+        value = get(handles.Friction,'Max');
+    end
+    set(hObject,'String',value);
+    set(handles.Friction,'Value',value);
 end

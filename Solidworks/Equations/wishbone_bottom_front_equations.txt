@@ -1,2 +1,1 @@
-﻿"thick"= 1
-"diameter"= 15
+"thick"=0.28863
